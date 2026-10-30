@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Before the Visit — Visit Prep Copilot | Jane Natividad</title>
+<meta name="description" content="A visit-preparation prototype for primary care: reviews a synthetic patient record between visits and flags what may need a second look, with every flag traced to the record entry behind it.">
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --accent: #0071e3; --accent-soft: #e8f2ff; --accent-border: #cce2ff;
+    --ink: #1d1d1f; --ink-soft: #48484a; --muted: #6e6e73;
+    --hairline: #e5e5e7; --panel: #f5f5f7; --bg: #ffffff;
+    --good: #1a7f4e; --good-soft: #e7f6ee;
+    --warn: #9a6b00; --warn-soft: #fff6e0;
+    --bad: #b3261e; --bad-soft: #fdecea;
+  }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+  .wrap { max-width: 800px; margin: 0 auto; padding: 56px 24px 80px; }
+  .back-link { display: inline-block; font-size: 12px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+  .back-link:hover { color: var(--accent); }
+  .eyebrow { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 14px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px; line-height: 1.18; text-wrap: balance; }
+  h2 { font-size: 17px; font-weight: 650; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .byline { font-size: 12.8px; color: var(--muted); margin: 0 0 28px; }
+  .byline a { color: var(--muted); }
+  p { font-size: 14.5px; line-height: 1.62; color: var(--ink-soft); margin: 0 0 16px; }
+  .lede { font-size: 15.5px; line-height: 1.6; color: var(--ink); background: var(--panel); border-radius: 14px; padding: 20px 24px; margin: 0 0 28px; }
+  .section-label { font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 36px 0 14px; }
+  .section-sub { font-size: 13px; color: var(--ink-soft); margin: -6px 0 14px; line-height: 1.55; }
+  .panel { background: var(--panel); border-radius: 14px; padding: 20px 22px; margin: 0 0 18px; }
+  .card { border: 1px solid var(--hairline); border-radius: 12px; padding: 14px 16px; background: #fff; }
+  .card.top { border-color: var(--accent-border); background: var(--accent-soft); }
+  .stack { display: flex; flex-direction: column; gap: 10px; }
+  .pipeline { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+  .pipe-step { flex: 1 1 auto; min-width: 130px; background: var(--panel); border: 1px solid var(--hairline); border-radius: 10px; padding: 10px 12px; font-size: 11.3px; color: var(--ink-soft); line-height: 1.4; }
+  .pipe-step b { display: block; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
+  .pipeline-note { font-size: 11.5px; color: var(--muted); margin: 0 0 24px; }
+  .btn { font-size: 12px; font-weight: 600; color: var(--accent); background: #fff; border: 1px solid var(--accent-border); border-radius: 8px; padding: 7px 13px; cursor: pointer; font-family: inherit; }
+  .btn:hover { background: var(--accent-soft); }
+  .btn.primary { color: #fff; background: var(--accent); border-color: var(--accent); }
+  .btn.primary:hover { background: #005bbf; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-size: 11.8px; color: var(--accent); background: #fff; border: 1px solid var(--accent-border); border-radius: 999px; padding: 6px 13px; cursor: pointer; font-family: inherit; text-align: left; }
+  .chip:hover { background: var(--accent-soft); }
+  .chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tag { display: inline-block; font-size: 10.3px; font-weight: 700; letter-spacing: 0.04em; border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+  .tag.good { color: var(--good); background: var(--good-soft); }
+  .tag.warn { color: var(--warn); background: var(--warn-soft); }
+  .tag.bad { color: var(--bad); background: var(--bad-soft); }
+  .tag.info { color: var(--accent); background: var(--accent-soft); }
+  .tag.mute { color: var(--muted); background: var(--panel); }
+  .bar-track { height: 7px; background: var(--hairline); border-radius: 999px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.25s ease; }
+  input[type=text], input[type=password], select, textarea { font-family: inherit; font-size: 13px; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--hairline); background: #fff; color: var(--ink); }
+  textarea { width: 100%; resize: vertical; line-height: 1.5; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .gov-grid { display: flex; flex-direction: column; gap: 10px; margin: 0 0 32px; }
+  .gov-item { display: flex; gap: 12px; border: 1px solid var(--hairline); border-radius: 12px; padding: 13px 16px; }
+  .gov-icon { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; }
+  .gov-text b { display: block; font-size: 12.8px; color: var(--ink); margin-bottom: 2px; }
+  .gov-text span { font-size: 12.2px; color: var(--ink-soft); line-height: 1.55; }
+  .not-list { font-size: 12.5px; color: var(--ink-soft); line-height: 1.7; margin: 0 0 32px; padding-left: 20px; }
+  .not-list li { margin-bottom: 6px; }
+  .why { font-size: 13.3px; font-style: italic; color: var(--ink); background: var(--panel); border-radius: 14px; padding: 18px 22px; margin: 0 0 32px; line-height: 1.58; }
+  .disclosure { font-size: 11.5px; line-height: 1.55; color: var(--muted); background: var(--panel); border-radius: 10px; padding: 12px 16px; margin: 0 0 32px; }
+  pre.out { white-space: pre-wrap; word-break: break-word; background: var(--panel); border-radius: 10px; padding: 14px 16px; font-size: 12px; line-height: 1.6; color: var(--ink-soft); font-family: ui-monospace, "SF Mono", Menlo, monospace; margin: 0; }
+  table.grid { width: 100%; border-collapse: collapse; font-size: 12.3px; }
+  table.grid th { text-align: left; font-size: 10.3px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 8px 8px; border-bottom: 1px solid var(--hairline); }
+  table.grid td { padding: 9px 8px; border-bottom: 1px solid var(--hairline); color: var(--ink-soft); vertical-align: top; }
+  .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  footer { border-top: 1px solid var(--hairline); padding-top: 20px; font-size: 12px; color: var(--muted); }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  @media (max-width: 480px) { .wrap { padding: 40px 16px 60px; } h1 { font-size: 24px; } }
+
+  .pt-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+  .pt-name { font-size: 18px; font-weight: 700; }
+  .pt-meta { font-size: 12.3px; color: var(--muted); }
+  .problems { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .tabs { display: flex; gap: 6px; margin: 0 0 14px; }
+  .flag-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .flag-title { font-size: 13.5px; font-weight: 600; color: var(--ink); line-height: 1.4; }
+  .flag-body { font-size: 12.6px; color: var(--ink-soft); line-height: 1.55; margin: 6px 0; }
+  .trace { font-size: 11.3px; color: var(--muted); background: var(--panel); border-radius: 6px; padding: 6px 9px; margin-top: 6px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .flag-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .card.done { opacity: 0.55; }
+  .ask { font-size: 13px; line-height: 1.6; color: var(--ink); padding-left: 20px; margin: 0; }
+  .tl { position: relative; padding-left: 18px; }
+  .tl::before { content: ""; position: absolute; left: 5px; top: 4px; bottom: 4px; width: 2px; background: var(--hairline); }
+  .tl-item { position: relative; margin: 0 0 12px; font-size: 12.6px; color: var(--ink-soft); line-height: 1.5; }
+  .tl-item::before { content: ""; position: absolute; left: -17px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #fff; border: 2px solid var(--accent); }
+  .tl-item.new::before { background: var(--accent); }
+  .tl-date { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; }
+  .tl-id { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10.5px; color: var(--muted); }
+  .summary-line { font-size: 13px; color: var(--ink); margin: 0 0 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back-link" href="https://jane-natividad.github.io">&larr; Back to portfolio</a>
+  <div class="eyebrow">Healthcare · Primary Care · Working Prototype</div>
+  <h1>Before the visit: what changed, and what might need a second look</h1>
+  <p class="byline">Jane Natividad &nbsp;&middot;&nbsp; <a href="https://jane-natividad.github.io">jane-natividad.github.io</a> &nbsp;&middot;&nbsp; <a href="https://github.com/jane-natividad/visit-prep-copilot">View on GitHub</a></p>
+
+  <div class="lede">Patients managing an ongoing condition can fall through the gaps between visits: a dose changed by a specialist that never matched what the pharmacy dispensed, a referral sent and never closed, a lab that's quietly overdue. This prototype reads a patient's record between visits and prepares the physician before they walk in &mdash; what's changed since last time, what may need a second look, and questions worth asking. It supports clinical review. It doesn't diagnose or recommend treatment, and every flag traces back to the record entry behind it.</div>
+
+  <div class="section-label">1 · Pick a synthetic patient</div>
+  <div class="chips" id="patients"></div>
+
+  <div class="section-label">2 · Visit preparation</div>
+  <div class="card" id="pt-card"></div>
+  <div style="height:12px"></div>
+  <div class="tabs"><button class="chip on" id="tab-prep" type="button">Prep view</button><button class="chip" id="tab-tl" type="button">Record timeline</button></div>
+
+  <div id="prep">
+    <div class="card" id="summary" style="margin-bottom:12px"></div>
+    <div class="stack" id="flags"></div>
+    <div class="section-label">Questions worth asking</div>
+    <div class="card"><ol class="ask" id="asks"></ol></div>
+  </div>
+  <div id="timeline" style="display:none"><div class="card"><div class="tl" id="tl"></div></div></div>
+
+  <div class="section-label">How the flags are made</div>
+  <div class="gov-grid">
+    <div class="gov-item"><div class="gov-icon">1</div><div class="gov-text"><b>Rules, not a model</b><span>Every flag comes from a plain, readable rule: prescribed vs. dispensed dose, monitoring intervals, orders with no result, abnormal results with no follow-up. Same record in, same flags out.</span></div></div>
+    <div class="gov-item"><div class="gov-icon">2</div><div class="gov-text"><b>Every flag cites its source</b><span>Each one shows the record entry IDs it was built from, so a physician can check it in seconds rather than trust it.</span></div></div>
+    <div class="gov-item"><div class="gov-icon">3</div><div class="gov-text"><b>The physician closes the loop</b><span>Flags can be marked reviewed or not relevant. The tool never marks anything resolved by itself and never suggests a diagnosis or treatment.</span></div></div>
+  </div>
+  <ul class="not-list">
+    <li>No real patient data &mdash; all three patients are synthetic, and nothing you click leaves this browser tab.</li>
+    <li>No connection to an EMR, pharmacy, or lab system. A real version would need integration, privacy review, and clinical validation.</li>
+    <li>Monitoring intervals are simplified demonstration values, not clinical guidance.</li>
+  </ul>
+
+  <div class="why">"Physicians don't need another alert. They need the three things that changed since the last visit, already pulled together, with the receipts attached."</div>
+
+  <div class="disclosure">Demonstration prototype with synthetic patient data. For illustration of clinical-review support only; not a medical device and not medical advice.</div>
+  <footer>Built by <a href="https://jane-natividad.github.io">Jane Natividad</a>. No frameworks, no build step &mdash; a single static page and plain JavaScript. Companion to <a href="https://ai-patient-intake-assistant.vercel.app">Intake, Structured</a>.</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var TODAY = new Date("2026-11-02");
+  var PATIENTS = [
+    {
+      name: "R. Okafor", age: 58, sex: "M", lastVisit: "2026-05-12", reason: "Diabetes follow-up",
+      problems: ["Type 2 diabetes", "Hypertension", "Chronic kidney disease, stage 3a"],
+      meds: [
+        { id: "M-101", name: "Metformin", rx: "1000 mg twice daily", dispensed: "500 mg twice daily", fillDate: "2026-09-20", by: "Endocrinology", changed: "2026-07-03" },
+        { id: "M-102", name: "Ramipril", rx: "5 mg daily", dispensed: "5 mg daily", fillDate: "2026-10-01", class: "acei" },
+        { id: "M-103", name: "Atorvastatin", rx: "20 mg daily", dispensed: "20 mg daily", fillDate: "2026-10-01" }
+      ],
+      labs: [
+        { id: "L-201", test: "HbA1c", value: "8.4 %", date: "2026-03-30", abnormal: true },
+        { id: "L-202", test: "eGFR", value: "52 mL/min", date: "2025-09-14", abnormal: true },
+        { id: "L-203", test: "Potassium", value: "4.9 mmol/L", date: "2025-09-14" }
+      ],
+      orders: [
+        { id: "O-301", what: "Referral: diabetic eye exam", date: "2026-05-12", status: "sent", result: null },
+        { id: "O-302", what: "Endocrinology consult", date: "2026-05-12", status: "completed", result: "2026-07-03", note: "Metformin increased to 1000 mg twice daily." }
+      ],
+      events: [{ id: "E-401", date: "2026-08-22", what: "Emergency visit: dizziness, discharged same day" }]
+    },
+    {
+      name: "L. Tremblay", age: 71, sex: "F", lastVisit: "2026-08-04", reason: "Blood pressure check",
+      problems: ["Hypertension", "Atrial fibrillation", "Osteoarthritis"],
+      meds: [
+        { id: "M-111", name: "Apixaban", rx: "5 mg twice daily", dispensed: "5 mg twice daily", fillDate: "2026-10-10" },
+        { id: "M-112", name: "Amlodipine", rx: "10 mg daily", dispensed: "10 mg daily", fillDate: "2026-10-10" },
+        { id: "M-113", name: "Naproxen (over the counter)", rx: "patient-reported", dispensed: "patient-reported", fillDate: "2026-09-01", patientReported: true }
+      ],
+      labs: [
+        { id: "L-211", test: "Hemoglobin", value: "112 g/L", date: "2026-09-18", abnormal: true, followUp: false },
+        { id: "L-212", test: "Creatinine", value: "88 µmol/L", date: "2026-09-18" }
+      ],
+      orders: [
+        { id: "O-311", what: "Echocardiogram", date: "2026-06-02", status: "completed", result: "2026-07-15" },
+        { id: "O-312", what: "Physiotherapy referral (knee)", date: "2026-08-04", status: "sent", result: null }
+      ],
+      events: []
+    },
+    {
+      name: "S. Haddad", age: 44, sex: "F", lastVisit: "2026-09-29", reason: "Asthma review",
+      problems: ["Asthma"],
+      meds: [
+        { id: "M-121", name: "Budesonide/formoterol inhaler", rx: "as directed", dispensed: "as directed", fillDate: "2026-09-29" }
+      ],
+      labs: [],
+      orders: [{ id: "O-321", what: "Spirometry", date: "2026-09-29", status: "completed", result: "2026-10-14" }],
+      events: []
+    }
+  ];
+
+  var cur = 0, reviewed = {};
+  var $ = function (id) { return document.getElementById(id); };
+  function d(s) { return new Date(s); }
+  function daysSince(s) { return Math.round((TODAY - d(s)) / 86400000); }
+  function months(s) { return Math.round(daysSince(s) / 30.4); }
+  function fmt(s) { return d(s).toLocaleDateString("en-CA", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }); }
+
+  function buildFlags(p) {
+    var f = [];
+    p.meds.forEach(function (m) {
+      if (!m.patientReported && m.rx !== m.dispensed) f.push({ sev: "High", title: m.name + ": prescribed dose doesn't match what was dispensed", body: "Prescribed " + m.rx + (m.by ? " (changed by " + m.by + " on " + fmt(m.changed) + ")" : "") + ", but the last pharmacy fill on " + fmt(m.fillDate) + " was " + m.dispensed + ".", src: [m.id], ask: "Which " + m.name.toLowerCase() + " dose are you actually taking right now?" });
+    });
+    var hasDiabetes = p.problems.some(function (x) { return /diabetes/i.test(x); });
+    if (hasDiabetes) {
+      var a1c = p.labs.filter(function (l) { return l.test === "HbA1c"; })[0];
+      if (!a1c || months(a1c.date) >= 6) f.push({ sev: "Medium", title: "HbA1c is due", body: a1c ? "Last HbA1c " + a1c.value + " on " + fmt(a1c.date) + " — " + months(a1c.date) + " months ago, and above target at the time." : "No HbA1c on file.", src: a1c ? [a1c.id] : [], ask: null });
+    }
+    var onAcei = p.meds.some(function (m) { return m.class === "acei"; });
+    if (onAcei) {
+      var k = p.labs.filter(function (l) { return l.test === "Potassium"; })[0], egfr = p.labs.filter(function (l) { return l.test === "eGFR"; })[0];
+      var last = [k, egfr].filter(Boolean).sort(function (a, b) { return d(b.date) - d(a.date); })[0];
+      if (!last || months(last.date) >= 12) f.push({ sev: "Medium", title: "Kidney function and potassium not checked in over a year", body: "On an ACE inhibitor with chronic kidney disease; last eGFR/potassium " + (last ? fmt(last.date) + " (" + months(last.date) + " months ago)" : "not on file") + ".", src: [k && k.id, egfr && egfr.id].filter(Boolean), ask: null });
+    }
+    p.orders.forEach(function (o) {
+      if (o.status === "sent" && !o.result && daysSince(o.date) > 60) f.push({ sev: "Medium", title: "Open loop: " + o.what.toLowerCase() + " — no result after " + daysSince(o.date) + " days", body: "Sent " + fmt(o.date) + "; no appointment or report on file.", src: [o.id], ask: "Did you hear back about the " + o.what.replace(/^Referral: /i, "").toLowerCase() + "?" });
+    });
+    p.labs.forEach(function (l) {
+      if (l.abnormal && l.followUp === false) f.push({ sev: "Medium", title: l.test + " was abnormal with no documented follow-up", body: l.test + " " + l.value + " on " + fmt(l.date) + ", after the last visit. No follow-up note or repeat test on file.", src: [l.id], ask: null });
+    });
+    var anticoag = p.meds.some(function (m) { return /apixaban|warfarin|rivaroxaban/i.test(m.name); });
+    var nsaid = p.meds.filter(function (m) { return /naproxen|ibuprofen|diclofenac/i.test(m.name); })[0];
+    if (anticoag && nsaid) f.push({ sev: "High", title: "Patient-reported over-the-counter NSAID alongside an anticoagulant", body: nsaid.name + " reported by the patient, taken with a prescribed anticoagulant. Worth confirming how often it's being used.", src: [nsaid.id].concat(p.meds.filter(function (m) { return /apixaban|warfarin|rivaroxaban/i.test(m.name); }).map(function (m) { return m.id; })), ask: "How often are you taking naproxen for your knee?" });
+    p.events.forEach(function (e) {
+      if (d(e.date) > d(p.lastVisit)) f.push({ sev: "Low", title: "Since last visit: " + e.what.split(":")[0].toLowerCase(), body: e.what + " on " + fmt(e.date) + ".", src: [e.id], ask: "Tell me about the " + e.what.split(":")[0].toLowerCase() + " in " + d(e.date).toLocaleDateString("en-CA", { month: "long", timeZone: "UTC" }) + " — how have you been since?" });
+    });
+    var order = { High: 0, Medium: 1, Low: 2 };
+    return f.sort(function (a, b) { return order[a.sev] - order[b.sev]; });
+  }
+
+  function changesSince(p) {
+    var lv = d(p.lastVisit), c = [];
+    p.meds.forEach(function (m) { if (m.changed && d(m.changed) > lv) c.push(m.name + " changed by " + m.by); });
+    p.orders.forEach(function (o) { if (o.result && d(o.result) > lv) c.push(o.what + " completed"); });
+    p.labs.forEach(function (l) { if (d(l.date) > lv) c.push("New " + l.test + " result"); });
+    p.events.forEach(function (e) { if (d(e.date) > lv) c.push(e.what.split(":")[0]); });
+    return c;
+  }
+
+  function render() {
+    var p = PATIENTS[cur];
+    $("patients").querySelectorAll(".chip").forEach(function (b, i) { b.classList.toggle("on", i === cur); });
+    $("pt-card").innerHTML = '<div class="pt-head"><div class="pt-name">' + p.name + '</div><div class="pt-meta">' + p.age + " · " + p.sex + " · Last visit " + fmt(p.lastVisit) + " (" + daysSince(p.lastVisit) + " days ago) · Today: " + p.reason + '</div></div><div class="problems">' + p.problems.map(function (x) { return '<span class="tag info">' + x + "</span>"; }).join("") + "</div>";
+
+    var flags = buildFlags(p), ch = changesSince(p);
+    var open = flags.filter(function (f, i) { return !reviewed[cur + "-" + i]; }).length;
+    $("summary").innerHTML = '<p class="summary-line"><b>Changed since last visit:</b> ' + (ch.length ? ch.join(" · ") : "nothing recorded") + '</p><p class="summary-line"><b>Needs a second look:</b> ' + (flags.length ? open + " of " + flags.length + " open" : "nothing flagged — a quiet record is a useful answer too") + "</p>";
+
+    $("flags").innerHTML = "";
+    flags.forEach(function (f, i) {
+      var key = cur + "-" + i, st = reviewed[key];
+      var el = document.createElement("div"); el.className = "card" + (st ? " done" : "");
+      el.innerHTML = '<div class="flag-head"><div class="flag-title">' + f.title + '</div><span class="tag ' + (f.sev === "High" ? "bad" : f.sev === "Medium" ? "warn" : "mute") + '">' + f.sev + '</span></div><div class="flag-body">' + f.body + '</div><div class="trace">Source: ' + (f.src.length ? f.src.join(", ") : "absence of record") + "</div>"
+        + '<div class="flag-actions">' + (st ? '<span style="font-size:12px;color:var(--good);font-weight:600">' + st + ' by physician</span> <button class="btn" type="button" data-a="undo">Undo</button>' : '<button class="btn primary" type="button" data-a="Reviewed">Mark reviewed</button><button class="btn" type="button" data-a="Not relevant">Not relevant</button>') + "</div>";
+      el.querySelectorAll("button").forEach(function (b) {
+        b.addEventListener("click", function () { if (b.dataset.a === "undo") delete reviewed[key]; else reviewed[key] = b.dataset.a; render(); });
+      });
+      $("flags").appendChild(el);
+    });
+
+    var asks = flags.map(function (f) { return f.ask; }).filter(Boolean);
+    asks.push("Anything you'd like to make sure we cover today?");
+    $("asks").innerHTML = asks.map(function (a) { return "<li>" + a + "</li>"; }).join("");
+
+    var items = [];
+    p.meds.forEach(function (m) { items.push({ date: m.fillDate, txt: "Pharmacy fill: " + m.name + " " + m.dispensed, id: m.id }); if (m.changed) items.push({ date: m.changed, txt: m.by + " changed " + m.name + " to " + m.rx, id: m.id }); });
+    p.labs.forEach(function (l) { items.push({ date: l.date, txt: "Lab: " + l.test + " " + l.value + (l.abnormal ? " (abnormal)" : ""), id: l.id }); });
+    p.orders.forEach(function (o) { items.push({ date: o.date, txt: o.what + " — " + o.status, id: o.id }); if (o.result) items.push({ date: o.result, txt: o.what + " result received" + (o.note ? ": " + o.note : ""), id: o.id }); });
+    p.events.forEach(function (e) { items.push({ date: e.date, txt: e.what, id: e.id }); });
+    items.push({ date: p.lastVisit, txt: "Last visit with this physician", id: "VISIT" });
+    items.sort(function (a, b) { return d(b.date) - d(a.date); });
+    $("tl").innerHTML = items.map(function (it) { return '<div class="tl-item' + (d(it.date) > d(p.lastVisit) ? " new" : "") + '"><div class="tl-date">' + fmt(it.date) + ' <span class="tl-id">' + it.id + "</span></div>" + it.txt + "</div>"; }).join("");
+  }
+
+  PATIENTS.forEach(function (p, i) {
+    var b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = p.name + " · " + p.problems[0];
+    b.addEventListener("click", function () { cur = i; render(); });
+    $("patients").appendChild(b);
+  });
+  $("tab-prep").addEventListener("click", function () { $("prep").style.display = ""; $("timeline").style.display = "none"; this.classList.add("on"); $("tab-tl").classList.remove("on"); });
+  $("tab-tl").addEventListener("click", function () { $("prep").style.display = "none"; $("timeline").style.display = ""; this.classList.add("on"); $("tab-prep").classList.remove("on"); });
+  render();
+})();
+</script>
+</body>
+</html>
